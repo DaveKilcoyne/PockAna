@@ -19,7 +19,7 @@ io.on('connection', function(socket) {
 
 	socket.on('image_name', function(data) {
 
-		var imagePath = "public/body_2/body_2_"+data+"_1_1.jpg";
+		var imagePath = "public/body_2/body_2_"+data+"_3_1.jpg";
 		console.log('Recieved image name: '+imagePath);
 		 // var imagePath = "public/images/"+data;
 

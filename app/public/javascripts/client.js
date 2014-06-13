@@ -47,6 +47,9 @@ $(function() {
         slide: function( event, ui ) {
             console.log('sliderValue: ' + ui.value); 
             socket.emit('image_name', ui.value);
+        },
+        change: function( event, ui ) {
+             console.log(event);
         }
     });
 
