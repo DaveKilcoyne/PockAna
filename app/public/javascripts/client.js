@@ -1,42 +1,93 @@
 $(function() {
 
     var canvas = document.getElementById('can');
+    canvas.width = 1760;
+    canvas.height = 5100;
     var ctx = canvas.getContext('2d');  
-    // var secondaryCanvas = document.createElement("canvas");
-    // var secondaryCtx = secondaryCanvas.getContext("2d");
-    // var img = document.getElementById('pa');
 
-    var canvasHeight = 0;
-    var canvasWidth = 0;
+    var head_X_Position = 0;
+    var body_X_Position = 0;
+    var legsU_X_Position = 0;
+    var legL_X_Position = 0;
 
-    var image = new Image();
+    var canvasHeightHead = 0;
+    var canvasWidthHead = 0;
+    var canvasHeightBody = 0;
+    var canvasWidthBody = 0;
+    var canvasHeightLegsU = 0;
+    var canvasWidthLegsU = 0;
+    var canvasHeightLegsL = 0;
+    var canvasWidthLegsL = 0;
+
+    var bodyPart = '';
+
+    var imageHead = new Image();
+    var imagebody = new Image();
+    var imageLegU = new Image();
+    var imageLegL = new Image();
 
 
     var socket = io.connect();
 
-    image.onload = function() {
-        canvas.height = canvasHeight;
-        canvas.width = canvasWidth;
-        ctx.drawImage(this, 0, 0);
+    imageHead.onload = function() {  
+        ctx.clearRect(0, 0, 1760, canvasHeightHead);   
+        ctx.drawImage(this, head_X_Position, 0, canvasWidthHead, canvasHeightHead);
     }
 
-    socket.on('connect', function() {
+    imagebody.onload = function() {
+        ctx.clearRect(0, 1280, 1760, canvasHeightBody); 
+        ctx.drawImage(this, body_X_Position, 1280, canvasWidthBody, canvasHeightBody);
+    }
 
-        socket.emit('image_name', 1);
+    imageLegU.onload = function() {  
+        ctx.clearRect(0, 2560, 1760, canvasHeightLegsU);   
+        ctx.drawImage(this, legsU_X_Position, 2560, canvasWidthLegsU, canvasHeightLegsU);
+    }
+
+    imageLegL.onload = function() {  
+        ctx.clearRect(0, 3840, 1760, canvasHeightLegsL);   
+        ctx.drawImage(this, legL_X_Position, 3840, canvasWidthLegsL, canvasHeightLegsL);
+    }
+
+    socket.on('connect', function() {   
+
+        socket.emit('image_name', { rot: 1, qual: 3});
     });
 
     socket.on('image', function(data) {
 
         console.log(data);
-        // img.height = data.height;
-        // img.width = data.width;   
+        bodyPart = data.bodyPart;
 
-        canvasHeight = data.height;
-        canvasWidth = data.width;
+        if (bodyPart == 'head') {
+            canvasHeightHead = data.height;
+            canvasWidthHead = data.width;
+            head_X_Position = (1760 - canvasWidthHead)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            imageHead.src = 'data:image/jpg;base64,' + base64String; 
+        }
+        else if (bodyPart == 'body') {
+            canvasHeightBody = data.height
+            canvasWidthBody = data.width;
+            body_X_Position = (1760 - canvasWidthBody)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            imagebody.src = 'data:image/jpg;base64,' + base64String; 
+        }  
+        else if (bodyPart == 'legsU') {
+            canvasHeightLegsU = data.height
+            canvasWidthLegsU = data.width;
+            legsU_X_Position = (1760 - canvasWidthLegsU)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            imageLegU.src = 'data:image/jpg;base64,' + base64String; 
+        }  
+        else if (bodyPart == 'legsL') {
+            canvasHeightLegsL = data.height
+            canvasWidthLegsL = data.width;
+            legL_X_Position = (1760 - canvasWidthLegsL)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            imageLegL.src = 'data:image/jpg;base64,' + base64String; 
+        }
 
-        base64String =  base64ArrayBuffer(data.buffer) 
-        // img.src = 'data:image/jpg;base64,' + base64String; 
-        image.src = 'data:image/jpg;base64,' + base64String; 
     });
 
     $( "#slider" ).slider({
@@ -46,10 +97,11 @@ $(function() {
         value: 0,
         slide: function( event, ui ) {
             console.log('sliderValue: ' + ui.value); 
-            socket.emit('image_name', ui.value);
+            socket.emit('image_name', { rot: ui.value, qual: 1});
         },
         change: function( event, ui ) {
-             console.log(event);
+            console.log(event);
+            socket.emit('image_name', { rot: ui.value, qual: 3});
         }
     });
 
