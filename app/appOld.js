@@ -9,7 +9,7 @@ var app = express();
 
 app.use(express.static(path.join(__dirname, 'public'))); 
 app.get('/', function(req, res){
-	res.sendfile('index.html');
+	res.sendfile('indexold.html');
 });
 
 var server = http.createServer(app),
@@ -17,7 +17,7 @@ var server = http.createServer(app),
 
 var rotation;
 var	quality;
-var completeBodyObj = {};
+// var completeBodyObj = {};
 
 io.on('connection', function(socket) {
 
@@ -25,8 +25,6 @@ io.on('connection', function(socket) {
 
 		rotation = data.rot;
 		quality = data.qual;
-
-		if (quality==3) console.log(quality);
 
 		//First Head part
 		var imagePathHead = "public/body_2/body_2_"+rotation+"_"+quality+"_1.jpg";
@@ -46,7 +44,7 @@ io.on('connection', function(socket) {
 		imageTranfer( imagePathBod, imagePathBod_HQ, 'body' );
 		imageTranfer( imagePathLegsU, imagePathLegsU_HQ, 'legsU' );
 		imageTranfer( imagePathLegsL, imagePathLegsL_HQ, 'legsL' );
-		socket.emit('image', completeBodyObj);
+		// socket.emit('image', completeBodyObj);
 						
 
 		function imageTranfer(imagePath, imagePath_HQ, bodyPart) {
@@ -64,9 +62,9 @@ io.on('connection', function(socket) {
 							console.log("Error reading image file...");
 						} 
 						else {
-							console.log('image sending: ' +imagePath);
-							completeBodyObj[bodyPart]= { buffer: buf, width: dimensions.width, height: dimensions.height, bodyPart: bodyPart, imagePath: imagePath };
-							// socket.emit('image', { buffer: buf, width: dimensions.width, height: dimensions.height, bodyPart: bodyPart });
+							console.log('image sending');
+							// completeBodyObj[bodyPart]= { buffer: buf, width: dimensions.width, height: dimensions.height, bodyPart: bodyPart };
+							socket.emit('image', { buffer: buf, width: dimensions.width, height: dimensions.height, bodyPart: bodyPart });
 						}
 					});
 				}

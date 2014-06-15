@@ -19,34 +19,87 @@ $(function() {
     var canvasHeightLegsL = 0;
     var canvasWidthLegsL = 0;
 
+    var imgHead;
+    var imgBody; 
+    var imgLegsU;
+    var imgLegsL;
+
+    var imgHeadq;
+    var imgBodyq; 
+    var imgLegsUq;
+    var imgLegsLq;
+
     var bodyPart = '';
-
-    var imageHead = new Image();
-    var imagebody = new Image();
-    var imageLegU = new Image();
-    var imageLegL = new Image();
-
-
     var socket = io.connect();
 
-    imageHead.onload = function() {  
-        ctx.clearRect(0, 0, 1760, canvasHeightHead);   
-        ctx.drawImage(this, head_X_Position, 0, canvasWidthHead, canvasHeightHead);
+    function loadImages(completeBodyObj, whenLoaded) {
+        
+        var imgs=[];
+        for ( var i in completeBodyObj) {
+
+            var bodyObj = completeBodyObj[i];
+            var img = new Image;
+            img.imagePath = bodyObj.imagePath;
+            img.bodyPart = bodyObj.bodyPart;
+            img.height = bodyObj.height;
+            img.width = bodyObj.width;
+           
+            img.onload = function() {
+
+                imgs.push(this);
+                if (imgs.length == 4) whenLoaded(imgs);
+            }
+
+            base64String =  base64ArrayBuffer(bodyObj.buffer);
+            img.src = 'data:image/jpg;base64,' + base64String; 
+        }
     }
 
-    imagebody.onload = function() {
-        ctx.clearRect(0, 1280, 1760, canvasHeightBody); 
-        ctx.drawImage(this, body_X_Position, 1280, canvasWidthBody, canvasHeightBody);
-    }
+    function whenLoaded(imgs) {
 
-    imageLegU.onload = function() {  
-        ctx.clearRect(0, 2560, 1760, canvasHeightLegsU);   
-        ctx.drawImage(this, legsU_X_Position, 2560, canvasWidthLegsU, canvasHeightLegsU);
-    }
+        imgs.forEach(function(img){
 
-    imageLegL.onload = function() {  
-        ctx.clearRect(0, 3840, 1760, canvasHeightLegsL);   
-        ctx.drawImage(this, legL_X_Position, 3840, canvasWidthLegsL, canvasHeightLegsL);
+            bodyPart = img.bodyPart;
+
+            if (bodyPart == 'head') {
+                canvasHeightHead = img.height;
+                canvasWidthHead = img.width;
+                head_X_Position = (1760 - canvasWidthHead)/2; 
+                imgHead = img;  
+                imgHeadq = img.imagePath;      
+            }
+            else if (bodyPart == 'body') {
+                canvasHeightBody = img.height
+                canvasWidthBody = img.width;
+                body_X_Position = (1760 - canvasWidthBody)/2;
+                imgBody = img; 
+                imgBodyq = img.imagePath; 
+            }  
+            else if (bodyPart == 'legsU') {
+                canvasHeightLegsU = img.height
+                canvasWidthLegsU = img.width;
+                legsU_X_Position = (1760 - canvasWidthLegsU)/2;
+                imgLegsU = img; 
+                imgLegsUq = img.imagePath;
+            }  
+            else if (bodyPart == 'legsL') {
+                canvasHeightLegsL = img.height
+                canvasWidthLegsL = img.width;
+                legL_X_Position = (1760 - canvasWidthLegsL)/2;
+                imgLegsL = img; 
+                imgLegsLq = img.imagePath; 
+            }
+        });
+
+        canvas.width = 1760;
+        console.log(imgHeadq);
+        console.log(imgBodyq);
+        console.log(imgLegsUq);
+        console.log(imgLegsLq);
+        ctx.drawImage(imgHead, head_X_Position, 0, canvasWidthHead, canvasHeightHead);
+        ctx.drawImage(imgBody, body_X_Position, 1280, canvasWidthBody, canvasHeightBody);
+        ctx.drawImage(imgLegsU, legsU_X_Position, 2560, canvasWidthLegsU, canvasHeightLegsU);
+        ctx.drawImage(imgLegsL, legL_X_Position, 3840, canvasWidthLegsL, canvasHeightLegsL);
     }
 
     socket.on('connect', function() {   
@@ -57,36 +110,7 @@ $(function() {
     socket.on('image', function(data) {
 
         console.log(data);
-        bodyPart = data.bodyPart;
-
-        if (bodyPart == 'head') {
-            canvasHeightHead = data.height;
-            canvasWidthHead = data.width;
-            head_X_Position = (1760 - canvasWidthHead)/2;
-            base64String =  base64ArrayBuffer(data.buffer);
-            imageHead.src = 'data:image/jpg;base64,' + base64String; 
-        }
-        else if (bodyPart == 'body') {
-            canvasHeightBody = data.height
-            canvasWidthBody = data.width;
-            body_X_Position = (1760 - canvasWidthBody)/2;
-            base64String =  base64ArrayBuffer(data.buffer);
-            imagebody.src = 'data:image/jpg;base64,' + base64String; 
-        }  
-        else if (bodyPart == 'legsU') {
-            canvasHeightLegsU = data.height
-            canvasWidthLegsU = data.width;
-            legsU_X_Position = (1760 - canvasWidthLegsU)/2;
-            base64String =  base64ArrayBuffer(data.buffer);
-            imageLegU.src = 'data:image/jpg;base64,' + base64String; 
-        }  
-        else if (bodyPart == 'legsL') {
-            canvasHeightLegsL = data.height
-            canvasWidthLegsL = data.width;
-            legL_X_Position = (1760 - canvasWidthLegsL)/2;
-            base64String =  base64ArrayBuffer(data.buffer);
-            imageLegL.src = 'data:image/jpg;base64,' + base64String; 
-        }
+        loadImages(data, whenLoaded);
 
     });
 
@@ -96,12 +120,13 @@ $(function() {
         range: "min",
         value: 0,
         slide: function( event, ui ) {
-            console.log('sliderValue: ' + ui.value); 
+            // console.log('sliderValue: ' + ui.value); 
             socket.emit('image_name', { rot: ui.value, qual: 1});
         },
         change: function( event, ui ) {
             console.log(event);
             socket.emit('image_name', { rot: ui.value, qual: 3});
+            console.log('q3');
         }
     });
 
