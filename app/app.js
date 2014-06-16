@@ -15,58 +15,54 @@ app.get('/', function(req, res){
 var server = http.createServer(app),
 	io = io.listen(server); 
 
-var rotation;
-var	quality;
-var completeBodyObj = {};
+var img_rotation;
+var	img_quality;
 
 io.on('connection', function(socket) {
 
+	console.log('Client connected...');
+
 	socket.on('image_name', function(data) {
 
-		rotation = data.rot;
-		quality = data.qual;
-
-		if (quality==3) console.log(quality);
+		img_rotation = data.rotation;
+		img_quality = data.quality;
 
 		//First Head part
-		var imagePathHead = "public/body_2/body_2_"+rotation+"_"+quality+"_1.jpg";
-		var imagePathHead_HQ = "public/body_2/body_2_"+rotation+"_3_1.jpg"; //Resize to max quality size
+		var img_Path_Head = "public/body_2/body_2_"+img_rotation+"_"+img_quality+"_1.jpg";
+		var img_Path_Head_HQ = "public/body_2/body_2_"+img_rotation+"_3_1.jpg"; //Resize to max quality size
 
 		//Body part
-		var imagePathBod = "public/body_2/body_2_"+rotation+"_"+quality+"_2.jpg";
-		var imagePathBod_HQ = "public/body_2/body_2_"+rotation+"_3_2.jpg"; //Resize to max quality size
+		var img_Path_Body = "public/body_2/body_2_"+img_rotation+"_"+img_quality+"_2.jpg";
+		var img_Path_Body_HQ = "public/body_2/body_2_"+img_rotation+"_3_2.jpg"; //Resize to max quality size
 
-		var imagePathLegsU = "public/body_2/body_2_"+rotation+"_"+quality+"_3.jpg";
-		var imagePathLegsU_HQ = "public/body_2/body_2_"+rotation+"_3_3.jpg"; //Resize to max quality size
+		var img_Path_LegsU = "public/body_2/body_2_"+img_rotation+"_"+img_quality+"_3.jpg";
+		var img_Path_LegsU_HQ = "public/body_2/body_2_"+img_rotation+"_3_3.jpg"; //Resize to max quality size
 
-		var imagePathLegsL = "public/body_2/body_2_"+rotation+"_"+quality+"_4.jpg";
-		var imagePathLegsL_HQ = "public/body_2/body_2_"+rotation+"_3_4.jpg"; //Resize to max quality size
+		var img_Path_LegsL = "public/body_2/body_2_"+img_rotation+"_"+img_quality+"_4.jpg";
+		var img_Path_LegsL_HQ = "public/body_2/body_2_"+img_rotation+"_3_4.jpg"; //Resize to max quality size
 
-		imageTranfer( imagePathHead, imagePathHead_HQ, 'head' );
-		imageTranfer( imagePathBod, imagePathBod_HQ, 'body' );
-		imageTranfer( imagePathLegsU, imagePathLegsU_HQ, 'legsU' );
-		imageTranfer( imagePathLegsL, imagePathLegsL_HQ, 'legsL' );
-		socket.emit('image', completeBodyObj);
-						
+		imageTranfer( img_Path_Head, img_Path_Head_HQ, 'head' );
+		imageTranfer( img_Path_Body, img_Path_Body_HQ, 'body' );
+		imageTranfer( img_Path_LegsU, img_Path_LegsU_HQ, 'legsU' );
+		imageTranfer( img_Path_LegsL, img_Path_LegsL_HQ, 'legsL' );			
 
-		function imageTranfer(imagePath, imagePath_HQ, bodyPart) {
+		function imageTranfer(img_Path, img_Path_HQ, bodyPart) {
 
-			sizeOf(imagePath_HQ, function(err, dimensions) {
+			sizeOf(img_Path_HQ, function(err, dimensions) {
 
 				if (err) {
 					console.log("Error getting image size...");
 				} 
 				else {
 				
-					fs.readFile(imagePath, function(err, buf) {
+					fs.readFile(img_Path, function(err, buf) {
 
 						if (err) {
 							console.log("Error reading image file...");
 						} 
 						else {
-							console.log('image sending: ' +imagePath);
-							completeBodyObj[bodyPart]= { buffer: buf, width: dimensions.width, height: dimensions.height, bodyPart: bodyPart, imagePath: imagePath };
-							// socket.emit('image', { buffer: buf, width: dimensions.width, height: dimensions.height, bodyPart: bodyPart });
+							console.log('sending image: '+img_Path);
+							socket.emit('image', { buffer: buf, width: dimensions.width, height: dimensions.height, bodyPart: bodyPart });
 						}
 					});
 				}
@@ -76,11 +72,6 @@ io.on('connection', function(socket) {
 	});
 });
 
-
-
-
 server.listen(3000, function(){
 	console.log('listening on *:3000');
 });
-
-

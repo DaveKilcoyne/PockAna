@@ -1,117 +1,129 @@
 $(function() {
 
     var canvas = document.getElementById('can');
-    canvas.width = 1760;
-    canvas.height = 5100;
-    var ctx = canvas.getContext('2d');  
+        canvas.width = 1760;
+        canvas.height = 5100;
+    var ctx = canvas.getContext('2d'); 
+
+    var temp_canvas = document.createElement('canvas');
+        temp_canvas.width = 1760;
+        temp_canvas.height = 5100;
+    var temp_ctx = temp_canvas.getContext('2d');
+
+    var cavas_Width = 1760;
 
     var head_X_Position = 0;
     var body_X_Position = 0;
     var legsU_X_Position = 0;
-    var legL_X_Position = 0;
+    var legsL_X_Position = 0;
 
-    var canvasHeightHead = 0;
-    var canvasWidthHead = 0;
-    var canvasHeightBody = 0;
-    var canvasWidthBody = 0;
-    var canvasHeightLegsU = 0;
-    var canvasWidthLegsU = 0;
-    var canvasHeightLegsL = 0;
-    var canvasWidthLegsL = 0;
-
-    var imgHead;
-    var imgBody; 
-    var imgLegsU;
-    var imgLegsL;
-
-    var imgHeadq;
-    var imgBodyq; 
-    var imgLegsUq;
-    var imgLegsLq;
+    var img_Head_Height = 0;
+    var img_Head_Width = 0;
+    var img_Body_Height = 0;
+    var img_Body_Width = 0;
+    var img_LegsU_Height = 0;
+    var img_LegsU_Width = 0;
+    var img_LegsL_Height = 0;
+    var img_LegsL_Width = 0;
 
     var bodyPart = '';
+
+    var img_Head = new Image();
+    var img_Body = new Image();
+    var img_LegsU = new Image();
+    var img_LegsL = new Image();
+
+    var img_Head_Loaded_Flag = false;
+    var img_Body_Loaded_Flag = false;
+    var img_LegsU_Loaded_Flag = false;
+    var img_LegsL_Loaded_Flag = false;
+
     var socket = io.connect();
 
-    function loadImages(completeBodyObj, whenLoaded) {
-        
-        var imgs=[];
-        for ( var i in completeBodyObj) {
+    var onLoaded = function() {
+        if (img_Head_Loaded_Flag && img_Body_Loaded_Flag && img_LegsU_Loaded_Flag && img_LegsL_Loaded_Flag) {
 
-            var bodyObj = completeBodyObj[i];
-            var img = new Image;
-            img.imagePath = bodyObj.imagePath;
-            img.bodyPart = bodyObj.bodyPart;
-            img.height = bodyObj.height;
-            img.width = bodyObj.width;
-           
-            img.onload = function() {
+            temp_canvas.width = cavas_Width;
+            temp_ctx.drawImage(img_Head, head_X_Position, 0, img_Head_Width, img_Head_Height);
+            temp_ctx.drawImage(img_Body, body_X_Position, 1280, img_Body_Width, img_Body_Height);
+            temp_ctx.drawImage(img_LegsU, legsU_X_Position, 2560, img_LegsU_Width, img_LegsU_Height);
+            temp_ctx.drawImage(img_LegsL, legsL_X_Position, 3840, img_LegsL_Width, img_LegsL_Height);
 
-                imgs.push(this);
-                if (imgs.length == 4) whenLoaded(imgs);
-            }
-
-            base64String =  base64ArrayBuffer(bodyObj.buffer);
-            img.src = 'data:image/jpg;base64,' + base64String; 
+            canvas.width = cavas_Width;
+            ctx.drawImage(temp_canvas, 0, 0);
+            img_Head_Loaded_Flag = false;
+            img_Body_Loaded_Flag = false;
+            img_LegsU_Loaded_Flag = false;
+            img_LegsL_Loaded_Flag = false;
         }
     }
-
-    function whenLoaded(imgs) {
-
-        imgs.forEach(function(img){
-
-            bodyPart = img.bodyPart;
-
-            if (bodyPart == 'head') {
-                canvasHeightHead = img.height;
-                canvasWidthHead = img.width;
-                head_X_Position = (1760 - canvasWidthHead)/2; 
-                imgHead = img;  
-                imgHeadq = img.imagePath;      
-            }
-            else if (bodyPart == 'body') {
-                canvasHeightBody = img.height
-                canvasWidthBody = img.width;
-                body_X_Position = (1760 - canvasWidthBody)/2;
-                imgBody = img; 
-                imgBodyq = img.imagePath; 
-            }  
-            else if (bodyPart == 'legsU') {
-                canvasHeightLegsU = img.height
-                canvasWidthLegsU = img.width;
-                legsU_X_Position = (1760 - canvasWidthLegsU)/2;
-                imgLegsU = img; 
-                imgLegsUq = img.imagePath;
-            }  
-            else if (bodyPart == 'legsL') {
-                canvasHeightLegsL = img.height
-                canvasWidthLegsL = img.width;
-                legL_X_Position = (1760 - canvasWidthLegsL)/2;
-                imgLegsL = img; 
-                imgLegsLq = img.imagePath; 
-            }
-        });
-
-        canvas.width = 1760;
-        console.log(imgHeadq);
-        console.log(imgBodyq);
-        console.log(imgLegsUq);
-        console.log(imgLegsLq);
-        ctx.drawImage(imgHead, head_X_Position, 0, canvasWidthHead, canvasHeightHead);
-        ctx.drawImage(imgBody, body_X_Position, 1280, canvasWidthBody, canvasHeightBody);
-        ctx.drawImage(imgLegsU, legsU_X_Position, 2560, canvasWidthLegsU, canvasHeightLegsU);
-        ctx.drawImage(imgLegsL, legL_X_Position, 3840, canvasWidthLegsL, canvasHeightLegsL);
+        
+    img_Head.onload = function() {
+        // ctx.clearRect(0, 0, 1760, img_Head_Height);   
+        // ctx.drawImage(this, head_X_Position, 0, img_Head_Width, img_Head_Height);
+        img_Head_Loaded_Flag = true
+        onLoaded();
     }
 
-    socket.on('connect', function() {   
+    img_Body.onload = function() {
+        // ctx.clearRect(0, 1280, 1760, img_Body_Height); 
+        // ctx.drawImage(this, body_X_Position, 1280, img_Body_Width, img_Body_Height);
+        img_Body_Loaded_Flag = true;
+        onLoaded();
+    }
 
-        socket.emit('image_name', { rot: 1, qual: 3});
+    img_LegsU.onload = function() { 
+        // ctx.clearRect(0, 2560, 1760, img_LegsU_Height);   
+        // ctx.drawImage(this, legsU_X_Position, 2560, img_LegsU_Width, img_LegsU_Height);
+        img_LegsU_Loaded_Flag = true;
+        onLoaded();
+    }
+
+    img_LegsL.onload = function() {
+        // ctx.clearRect(0, 3840, 1760, img_LegsL_Height);   
+        // ctx.drawImage(this, legsL_X_Position, 3840, img_LegsL_Width, img_LegsL_Height);
+        img_LegsL_Loaded_Flag = true;
+        onLoaded();
+    }
+
+    socket.on('connect', function() {
+
+        socket.emit('image_name', { rotation: 1, quality: 3});
     });
 
     socket.on('image', function(data) {
 
         console.log(data);
-        loadImages(data, whenLoaded);
+        bodyPart = data.bodyPart;
 
+        if (bodyPart == 'head') {
+            img_Head_Height = data.height;
+            img_Head_Width = data.width;
+            head_X_Position = (1760 - img_Head_Width)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            img_Head.src = 'data:image/jpg;base64,' + base64String; 
+        }
+        else if (bodyPart == 'body') {
+            img_Body_Height = data.height
+            img_Body_Width = data.width;
+            body_X_Position = (1760 - img_Body_Width)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            img_Body.src = 'data:image/jpg;base64,' + base64String; 
+        }  
+        else if (bodyPart == 'legsU') {
+            img_LegsU_Height = data.height
+            img_LegsU_Width = data.width;
+            legsU_X_Position = (1760 - img_LegsU_Width)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            img_LegsU.src = 'data:image/jpg;base64,' + base64String; 
+        }  
+        else if (bodyPart == 'legsL') {
+            img_LegsL_Height = data.height
+            img_LegsL_Width = data.width;
+            legsL_X_Position = (1760 - img_LegsL_Width)/2;
+            base64String =  base64ArrayBuffer(data.buffer);
+            img_LegsL.src = 'data:image/jpg;base64,' + base64String; 
+        }
     });
 
     $( "#slider" ).slider({
@@ -120,13 +132,11 @@ $(function() {
         range: "min",
         value: 0,
         slide: function( event, ui ) {
-            // console.log('sliderValue: ' + ui.value); 
-            socket.emit('image_name', { rot: ui.value, qual: 1});
+            socket.emit('image_name', { rotation: ui.value, quality: 1});
         },
         change: function( event, ui ) {
             console.log(event);
-            socket.emit('image_name', { rot: ui.value, qual: 3});
-            console.log('q3');
+            socket.emit('image_name', { rotation: ui.value, quality: 3});
         }
     });
 
@@ -190,14 +200,14 @@ $(function() {
         }
 
 
-    function arrayBufferToBase64( buffer ) {
-        var binary = ''
-        var bytes = new Uint8Array( buffer )
-        var len = bytes.byteLength;
-        for (var i = 0; i < len; i++) {
-            binary += String.fromCharCode( bytes[ i ] )
-        }
-        return window.btoa( binary );
-    }
+    // function arrayBufferToBase64( buffer ) {
+    //     var binary = ''
+    //     var bytes = new Uint8Array( buffer )
+    //     var len = bytes.byteLength;
+    //     for (var i = 0; i < len; i++) {
+    //         binary += String.fromCharCode( bytes[ i ] )
+    //     }
+    //     return window.btoa( binary );
+    // }
 
 });
