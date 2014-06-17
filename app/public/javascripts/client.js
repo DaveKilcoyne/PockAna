@@ -11,6 +11,10 @@ $(function() {
     var temp_ctx = temp_canvas.getContext('2d');
 
     var cavas_Width = 1760;
+    var mouse_drag_distance = 0;
+    var last_distance = 0;
+    var img_Value = 1;
+    var img_request_tolerance = 4;
 
     var head_X_Position = 0;
     var body_X_Position = 0;
@@ -134,13 +138,62 @@ $(function() {
         slide: function( event, ui ) {
             socket.emit('image_name', { rotation: ui.value, quality: 1});
         },
-        change: function( event, ui ) {
+        stop: function( event, ui ) {
             console.log(event);
             socket.emit('image_name', { rotation: ui.value, quality: 3});
         }
     });
 
 
+    // distance dragged function
+    $('#can').on('mousedown', function(e) {
+
+        // e.originalEvent.preventDefault();
+        $(this).addClass("closed");
+        var iterator = 0; 
+        var mouse_Up = false;
+        var p0 = { x: e.pageX, y: e.pageY };
+
+        $(this).on('mousemove', function(e) {
+
+            var p1 = { x: e.pageX, y: e.pageY };
+            var distance = p1.x - p0.x;
+            p0 = p1;
+            mouse_drag_distance = Math.abs(distance);
+           
+            iterator++;
+            img_request_tolerance = iterator%6;
+
+            if ( (mouse_drag_distance > 1) && (img_request_tolerance == 0) ) {
+
+                if (distance > 0) {
+
+                    img_Value++;
+                    img_Value = (img_Value > 44) ? 1 : img_Value;
+                }
+                else {
+
+                    img_Value--;
+                    img_Value = (img_Value < 1) ? 44 : img_Value;
+                }
+
+                console.log(img_Value);
+                $("#slider").slider('value', img_Value);
+                socket.emit('image_name', { rotation: img_Value, quality: 1});
+            }
+
+        }).on('mouseup', function(e) {
+
+            $(this).unbind("mousemove")
+            if (!mouse_Up) {
+                socket.emit('image_name', { rotation: img_Value, quality: 3});
+                mouse_Up = true;
+                $(this).removeClass("closed");
+            }
+                   
+        })
+
+    })
 
     // Converts an ArrayBuffer directly to base64, without any intermediate 'convert to string then
     // use window.btoa' step. According to my tests, this appears to be a faster approach:

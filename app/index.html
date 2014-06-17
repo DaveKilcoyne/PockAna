@@ -18,11 +18,16 @@
 			margin-left: auto;
 			margin-right: auto;
 		}
+		.open {
+		    cursor: url(/images/openhand.cur), default !important;
+		}
+		.closed {
+		    cursor: url(/images/closedhand.cur), default !important;
+		}
 	</style>
 </head>
 <body>
-	<canvas id="can"></canvas>
-	<img id="pa">
+	<canvas id="can" class="open"></canvas>
 	<div id="slider"></div>
 </body>
 </html>
