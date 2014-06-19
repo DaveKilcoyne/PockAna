@@ -137,6 +137,7 @@ $(function() {
         value: 0,
         slide: function( event, ui ) {
             socket.emit('image_name', { rotation: ui.value, quality: 1});
+            img_Value = ui.value;
         },
         stop: function( event, ui ) {
             console.log(event);
@@ -164,7 +165,7 @@ $(function() {
             iterator++;
             img_request_tolerance = iterator%6;
 
-            if ( (mouse_drag_distance > 1) && (img_request_tolerance == 0) ) {
+            if ( (img_request_tolerance == 0) && (mouse_drag_distance > 1) ) {
 
                 if (distance > 0) {
 
