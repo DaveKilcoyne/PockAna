@@ -42,6 +42,8 @@ $(function() {
     var img_LegsU_Loaded_Flag = false;
     var img_LegsL_Loaded_Flag = false;
 
+    var mouse_Up;
+
     var socket = io.connect();
 
     var onLoaded = function() {
@@ -151,8 +153,8 @@ $(function() {
 
         // e.originalEvent.preventDefault();
         $(this).addClass("closed");
+        mouse_Up = true;
         var iterator = 0; 
-        var mouse_Up = false;
         var p0 = { x: e.pageX, y: e.pageY };
 
         $(this).on('mousemove', function(e) {
@@ -183,17 +185,25 @@ $(function() {
                 socket.emit('image_name', { rotation: img_Value, quality: 1});
             }
 
-        }).on('mouseup', function(e) {
+        }).on('mouseup', function() {
 
             $(this).unbind("mousemove")
-            if (!mouse_Up) {
+            if (mouse_Up) {
                 socket.emit('image_name', { rotation: img_Value, quality: 3});
-                mouse_Up = true;
                 $(this).removeClass("closed");
+                mouse_Up = false;
+               
             }
                    
         })
 
+    })
+
+    $(document).on('mouseup', function() {
+        if(mouse_Up){
+            $('#can').unbind("mousemove").removeClass("closed");            
+            mouse_Up = false;
+        }
     })
 
     // Converts an ArrayBuffer directly to base64, without any intermediate 'convert to string then
